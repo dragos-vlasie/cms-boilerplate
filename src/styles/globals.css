@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+
+@plugin "daisyui" {
+  themes: bumblebee --default, abyss --prefersdark, cupcake, dracula;
+  root: ":root";
+  include: ;
+  exclude: ;
+  prefix: ;
+  logs: true;
+}
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.ProseMirror {
+  outline: none;
+}
+
