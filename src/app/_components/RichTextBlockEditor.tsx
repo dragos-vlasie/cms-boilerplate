@@ -1,11 +1,7 @@
 // src/app/_components/RichTextBlockEditor.tsx
 "use client";
 
-import {
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { useState, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import LinkExt from "@tiptap/extension-link";
@@ -136,11 +132,12 @@ export function RichTextBlockEditor({
     const chain = editor.chain().focus();
     if (type === "paragraph") {
       chain.setParagraph().run();
-    } else {
-      const level = Number(type.replace("heading-", ""));
-      if (!Number.isNaN(level) && [1, 2, 3, 4, 5, 6].includes(level)) {
-        chain.setHeading({ level: level as Level }).run();
-      }
+      return;
+    }
+
+    const level = Number(type.replace("heading-", ""));
+    if (!Number.isNaN(level) && [1, 2, 3, 4, 5, 6].includes(level)) {
+      chain.setHeading({ level: level as Level }).run();
     }
   };
 
@@ -194,8 +191,8 @@ export function RichTextBlockEditor({
   };
 
   const handleUpload = async (file: File) => {
+    setIsUploading(true);
     try {
-      setIsUploading(true);
       const formData = new FormData();
       formData.append("file", file);
 
@@ -207,18 +204,18 @@ export function RichTextBlockEditor({
       if (!res.ok) throw new Error("Upload failed");
       const data: { id: string; url: string } = await res.json();
 
-    editor
-      .chain()
-      .focus()
-      .setImage({
-        src: data.url,
-        alt: imageAlt.trim() || undefined,
-        assetId: data.id,
-        provider: "supabase",
-      } as any)
-      .run();
-    closeImageModal();
-  } finally {
+      editor
+        .chain()
+        .focus()
+        .setImage({
+          src: data.url,
+          alt: imageAlt.trim() || undefined,
+          assetId: data.id,
+          provider: "supabase",
+        } as any)
+        .run();
+      closeImageModal();
+    } finally {
       setIsUploading(false);
     }
   };
