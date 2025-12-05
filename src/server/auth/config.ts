@@ -34,20 +34,23 @@ export const authConfig = {
           return null;
         }
 
+        const email = String(credentials.email);
+        const password = String(credentials.password);
+
         if (!process.env.ADMIN_PASSWORD) {
           throw new Error("ADMIN_PASSWORD is not set");
         }
 
         // Simple check: only accept the password from .env
-        if (credentials.password !== process.env.ADMIN_PASSWORD) {
+        if (password !== process.env.ADMIN_PASSWORD) {
           return null;
         }
 
         // We don't need a DB user for this boilerplate – just return a user object.
         return {
-          id: `admin-${credentials.email}`,
-          email: credentials.email,
-          name: credentials.email,
+          id: `admin-${email}`,
+          email,
+          name: email,
         };
       },
     }),

@@ -11,6 +11,8 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
+    const bucket = env.SUPABASE_STORAGE_BUCKET ?? "local-bucket";
+
     if (!file) {
       return NextResponse.json(
         { error: "Missing file" },
@@ -32,7 +34,7 @@ export async function POST(req: Request) {
       .slice(2)}${safeExt}`;
 
     const { error: uploadError } = await supabaseServer.storage
-      .from(env.SUPABASE_STORAGE_BUCKET)
+      .from(bucket)
       .upload(filePath, buffer, {
         contentType: file.type,
         upsert: false,
@@ -49,7 +51,7 @@ export async function POST(req: Request) {
     const {
       data: { publicUrl },
     } = supabaseServer.storage
-      .from(env.SUPABASE_STORAGE_BUCKET)
+      .from(bucket)
       .getPublicUrl(filePath);
 
     const asset = await db.mediaAsset.create({
