@@ -1,5 +1,6 @@
 import { db } from "~/server/db";
 import { redirect } from "next/navigation";
+import type { Block } from "~/lib/blocks";
 
 // OPTIONAL: a simple default JSON you can reuse for Home
 const defaultContent = [
@@ -44,9 +45,12 @@ export default function NewPage() {
     const path = formData.get("path") as string;
     const contentRaw = formData.get("content") as string;
 
-    let content: any = [];
+    let content: Block[] = [];
     try {
-      content = JSON.parse(contentRaw || "[]");
+      const parsed = JSON.parse(contentRaw || "[]") as unknown;
+      if (Array.isArray(parsed)) {
+        content = parsed as Block[];
+      }
     } catch {
       content = [];
     }

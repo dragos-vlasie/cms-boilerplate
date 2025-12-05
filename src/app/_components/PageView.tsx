@@ -1,14 +1,12 @@
 // src/app/_components/PageView.tsx
-import Image from "next/image";
-import type { JSX } from "react";
-import type { Block, RichTextBlock } from "~/lib/blocks";
+import type { Block } from "~/lib/blocks";
 import { renderRichText } from "~/lib/renderRichText";
 
 export function PageView({ blocks }: { blocks: Block[] }) {
   return (
     <>
       {blocks.map((block) => {
-        const rich = block as RichTextBlock;
+        const rich = block;
 
         return (
           <section
@@ -24,5 +22,4 @@ export function PageView({ blocks }: { blocks: Block[] }) {
     </>
   );
 }
-
 

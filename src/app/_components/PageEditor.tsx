@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { Block, RichTextBlock, RichTextDoc } from "~/lib/blocks";
+import type { Block, RichTextDoc } from "~/lib/blocks";
 import { PageView } from "./PageView";
 import { RichTextBlockEditor } from "./RichTextBlockEditor";
 
@@ -86,7 +86,7 @@ export function PageEditor({
           {blocks.map((block) => (
             <RichTextBlockEditor
               key={block.id}
-              block={block as RichTextBlock}
+              block={block}
               updateDoc={updateBlockDoc}
             />
           ))}

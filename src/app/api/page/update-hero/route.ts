@@ -10,7 +10,9 @@ export async function POST(req: Request) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { pageId, title } = await req.json();
+  const body = (await req.json()) as unknown;
+  const pageId = (body as { pageId?: string }).pageId;
+  const title = (body as { title?: string }).title;
 
   if (!pageId || typeof title !== "string" || !title.trim()) {
     return new NextResponse("Bad Request", { status: 400 });
@@ -21,7 +23,9 @@ export async function POST(req: Request) {
     return new NextResponse("Not Found", { status: 404 });
   }
 
-  const blocks = (page.content ?? []) as Block[];
+  const blocks = Array.isArray(page.content)
+    ? (page.content as Block[])
+    : [];
 
   const updatedBlocks: Block[] = blocks.map((block) =>
     block.type === "hero"

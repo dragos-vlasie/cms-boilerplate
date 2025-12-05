@@ -1,5 +1,6 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function AdminLayout({
   children,
@@ -17,12 +18,12 @@ export default async function AdminLayout({
       <aside className="w-64 border-r p-4">
         <div className="mb-4 text-lg font-bold">CMS Admin</div>
         <nav className="flex flex-col gap-2 text-sm">
-          <a href="/admin/pages" className="hover:underline">
+          <Link href="/admin/pages" className="hover:underline">
             Pages
-          </a>
-          <a href="/admin/pages/new" className="hover:underline">
+          </Link>
+          <Link href="/admin/pages/new" className="hover:underline">
             Add new page
-          </a>
+          </Link>
         </nav>
       </aside>
       <main className="flex-1 p-6">{children}</main>
