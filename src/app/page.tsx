@@ -1,38 +1,10 @@
 // src/app/page.tsx
 import { db } from "~/server/db";
 import { auth } from "~/server/auth";
-import type { Block, RichTextBlock, RichTextDoc } from "~/lib/blocks";
+import type { Block } from "~/lib/blocks";
 import { PageView } from "./_components/PageView";
 import { PageEditor } from "./_components/PageEditor";
-
-function toDocFromString(text: string): RichTextDoc {
-  return {
-    type: "doc",
-    content: text
-      ? [
-          {
-            type: "paragraph",
-            content: [{ type: "text", text }],
-          },
-        ]
-      : [],
-  };
-}
-
-function normalizeBlocks(raw: any[] | null | undefined): Block[] {
-  return (raw ?? []).map((b) => {
-    const rb = b as Partial<RichTextBlock>;
-    const doc =
-      rb.props?.doc ??
-      toDocFromString((rb.props as any)?.body ?? ""); // legacy fallback
-
-    return {
-      id: rb.id ?? crypto.randomUUID(),
-      type: "richText",
-      props: { doc },
-    } satisfies Block;
-  });
-}
+import { normalizeBlocks } from "./_lib/normalizeBlocks";
 
 export default async function HomePage() {
   const session = await auth();
@@ -58,7 +30,13 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen">
-      <PageEditor initialBlocks={blocks} pageId={page.id} />
+      <PageEditor
+        initialBlocks={blocks}
+        pageId={page.id}
+        pageTitle={page.title}
+        pageStatus={page.status}
+        updatedAt={page.updatedAt}
+      />
     </main>
   );
 }
