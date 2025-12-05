@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { auth } from "~/server/auth";
 import type { Block } from "~/lib/blocks";
+import { PageStatus } from "@prisma/client";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -9,9 +10,10 @@ export async function POST(req: Request) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { pageId, blocks } = (await req.json()) as {
+  const { pageId, blocks, status } = (await req.json()) as {
     pageId?: string;
     blocks?: Block[];
+    status?: PageStatus;
   };
 
   if (!pageId || !Array.isArray(blocks)) {
@@ -25,7 +27,10 @@ export async function POST(req: Request) {
 
   await db.page.update({
     where: { id: pageId },
-    data: { content: blocks },
+    data: {
+      content: blocks,
+      status: status ?? page.status,
+    },
   });
 
   return NextResponse.json({ ok: true });
