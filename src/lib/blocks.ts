@@ -12,4 +12,15 @@ export type RichTextBlock = {
   };
 };
 
-export type Block = RichTextBlock;
+export type HeroBlock = {
+  id: string;
+  type: "hero";
+  props: {
+    title: string;
+    subtitle?: string;
+    ctaText?: string;
+    ctaHref?: string;
+  };
+};
+
+export type Block = RichTextBlock | HeroBlock;

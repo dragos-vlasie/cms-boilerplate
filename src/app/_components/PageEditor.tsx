@@ -23,7 +23,7 @@ export function PageEditor({
   const updateBlockDoc = (blockId: string, doc: RichTextDoc) => {
     setBlocks((prev) =>
       prev.map((block) =>
-        block.id === blockId
+        block.id === blockId && block.type === "richText"
           ? { ...block, props: { ...block.props, doc } }
           : block,
       ),

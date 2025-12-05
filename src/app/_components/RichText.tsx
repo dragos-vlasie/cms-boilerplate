@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import type { Block, HeroBlock, TextBlock, RichTextDoc } from "~/lib/blocks";
+import type { RichTextDoc } from "~/lib/blocks";
 
 export function renderRichText(doc: RichTextDoc) {
   if (!doc || !doc.content) return null;

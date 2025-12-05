@@ -10,8 +10,9 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import LinkExt from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
+import type { Level } from "@tiptap/extension-heading";
 
-import type { RichTextBlock } from "~/lib/blocks";
+import type { RichTextBlock, RichTextDoc } from "~/lib/blocks";
 import {
   TailwindParagraph,
   TailwindHeading,
@@ -34,7 +35,7 @@ export function RichTextBlockEditor({
   updateDoc,
 }: {
   block: RichTextBlock;
-  updateDoc: (id: string, doc: unknown) => void;
+  updateDoc: (id: string, doc: RichTextDoc) => void;
 }) {
   // --- link modal state ---
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -61,8 +62,6 @@ export function RichTextBlockEditor({
         heading: false,
         bulletList: false,
         orderedList: false,
-        taskList: false,
-        taskItem: false,
       }),
       TailwindParagraph,
       TailwindHeading,
@@ -89,7 +88,7 @@ export function RichTextBlockEditor({
     content: block.props.doc,
     immediatelyRender: false,
     onUpdate({ editor }) {
-      updateDoc(block.id, editor.getJSON());
+      updateDoc(block.id, editor.getJSON() as RichTextDoc);
     },
   });
 
@@ -139,7 +138,9 @@ export function RichTextBlockEditor({
       chain.setParagraph().run();
     } else {
       const level = Number(type.replace("heading-", ""));
-      if (!Number.isNaN(level)) chain.setHeading({ level }).run();
+      if (!Number.isNaN(level) && [1, 2, 3, 4, 5, 6].includes(level)) {
+        chain.setHeading({ level: level as Level }).run();
+      }
     }
   };
 
@@ -187,8 +188,7 @@ export function RichTextBlockEditor({
       .setImage({
         src: url,
         alt: imageAlt.trim() || undefined,
-        provider: "url",
-      })
+      } as any)
       .run();
     closeImageModal();
   };
@@ -207,18 +207,18 @@ export function RichTextBlockEditor({
       if (!res.ok) throw new Error("Upload failed");
       const data: { id: string; url: string } = await res.json();
 
-      editor
-        .chain()
-        .focus()
-        .setImage({
-          src: data.url,
-          alt: imageAlt.trim() || undefined,
-          assetId: data.id,
-          provider: "supabase",
-        })
-        .run();
-      closeImageModal();
-    } finally {
+    editor
+      .chain()
+      .focus()
+      .setImage({
+        src: data.url,
+        alt: imageAlt.trim() || undefined,
+        assetId: data.id,
+        provider: "supabase",
+      } as any)
+      .run();
+    closeImageModal();
+  } finally {
       setIsUploading(false);
     }
   };
@@ -240,7 +240,7 @@ export function RichTextBlockEditor({
         alt: (item.alt ?? imageAlt.trim()) || undefined,
         assetId: item.id,
         provider: item.provider,
-      })
+      } as any)
       .run();
     closeImageModal();
   };
@@ -310,7 +310,7 @@ export function RichTextBlockEditor({
                     editor.chain().focus().setTextAlign(align).run();
                   }}
                 >
-                  {align[0].toUpperCase() + align.slice(1)}
+                  {align.charAt(0).toUpperCase() + align.slice(1)}
                 </button>
               </li>
             ))}
