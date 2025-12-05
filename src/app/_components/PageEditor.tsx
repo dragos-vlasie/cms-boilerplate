@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { Block, RichTextBlock } from "~/lib/blocks";
+import type { Block, RichTextBlock, RichTextDoc } from "~/lib/blocks";
 import { PageView } from "./PageView";
 import { RichTextBlockEditor } from "./RichTextBlockEditor";
 
@@ -20,14 +20,11 @@ export function PageEditor({
   const [mode, setMode] = useState<"edit" | "view">("edit");
   const router = useRouter();
 
-  const updateBlockDoc = (blockId: string, doc: unknown) => {
+  const updateBlockDoc = (blockId: string, doc: RichTextDoc) => {
     setBlocks((prev) =>
       prev.map((block) =>
         block.id === blockId
-          ? {
-              ...(block as RichTextBlock),
-              props: { ...(block as RichTextBlock).props, doc },
-            }
+          ? { ...block, props: { ...block.props, doc } }
           : block,
       ),
     );
@@ -100,5 +97,3 @@ export function PageEditor({
     </div>
   );
 }
-
-
