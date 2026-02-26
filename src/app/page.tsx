@@ -19,12 +19,21 @@ function toDocFromString(text: string): RichTextDoc {
   };
 }
 
-function normalizeBlocks(raw: any[] | null | undefined): Block[] {
-  return (raw ?? []).map((b) => {
+function normalizeBlocks(raw: unknown): Block[] {
+  const items = Array.isArray(raw) ? raw : [];
+  return items.map((b) => {
     const rb = b as Partial<RichTextBlock>;
+    const legacyBody =
+      typeof rb.props === "object" &&
+      rb.props !== null &&
+      "body" in rb.props &&
+      typeof (rb.props as { body?: unknown }).body === "string"
+        ? (rb.props as { body?: string }).body
+        : "";
+
     const doc =
       rb.props?.doc ??
-      toDocFromString((rb.props as any)?.body ?? ""); // legacy fallback
+      toDocFromString(legacyBody ?? "");
 
     return {
       id: rb.id ?? crypto.randomUUID(),
@@ -46,7 +55,7 @@ export default async function HomePage() {
     );
   }
 
-  const blocks = normalizeBlocks(page.content as any[]) as Block[];
+  const blocks = normalizeBlocks(page.content as unknown);
 
   if (!session) {
     return (

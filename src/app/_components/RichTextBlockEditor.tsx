@@ -11,7 +11,7 @@ import StarterKit from "@tiptap/starter-kit";
 import LinkExt from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 
-import type { RichTextBlock } from "~/lib/blocks";
+import type { RichTextBlock, RichTextDoc } from "~/lib/blocks";
 import {
   TailwindParagraph,
   TailwindHeading,
@@ -34,7 +34,7 @@ export function RichTextBlockEditor({
   updateDoc,
 }: {
   block: RichTextBlock;
-  updateDoc: (id: string, doc: unknown) => void;
+  updateDoc: (id: string, doc: RichTextDoc) => void;
 }) {
   // --- link modal state ---
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -89,7 +89,7 @@ export function RichTextBlockEditor({
     content: block.props.doc,
     immediatelyRender: false,
     onUpdate({ editor }) {
-      updateDoc(block.id, editor.getJSON());
+      updateDoc(block.id, editor.getJSON() as RichTextDoc);
     },
   });
 
@@ -205,15 +205,29 @@ export function RichTextBlockEditor({
       });
 
       if (!res.ok) throw new Error("Upload failed");
-      const data: { id: string; url: string } = await res.json();
+      const data = (await res.json()) as unknown;
+
+      if (
+        !data ||
+        typeof data !== "object" ||
+        typeof (data as { url?: unknown }).url !== "string" ||
+        typeof (data as { id?: unknown }).id !== "string"
+      ) {
+        throw new Error("Invalid upload response");
+      }
+
+      const typedData = {
+        id: (data as { id: string }).id,
+        url: (data as { url: string }).url,
+      };
 
       editor
         .chain()
         .focus()
         .setImage({
-          src: data.url,
+          src: typedData.url,
           alt: imageAlt.trim() || undefined,
-          assetId: data.id,
+          assetId: typedData.id,
           provider: "supabase",
         })
         .run();
@@ -227,8 +241,25 @@ export function RichTextBlockEditor({
     if (library.length > 0) return;
     const res = await fetch("/api/media/list");
     if (!res.ok) return;
-    const items: LibraryItem[] = await res.json();
-    setLibrary(items);
+    const items = (await res.json()) as unknown;
+    if (Array.isArray(items)) {
+      const parsed: LibraryItem[] = [];
+      for (const item of items) {
+        if (
+          item &&
+          typeof item === "object" &&
+          typeof (item as LibraryItem).id === "string" &&
+          typeof (item as LibraryItem).url === "string" &&
+          (typeof (item as LibraryItem).alt === "string" ||
+            typeof (item as LibraryItem).alt === "undefined") &&
+          ((item as LibraryItem).provider === "supabase" ||
+            (item as LibraryItem).provider === "contentful")
+        ) {
+          parsed.push(item as LibraryItem);
+        }
+      }
+      setLibrary(parsed);
+    }
   };
 
   const insertFromLibrary = (item: LibraryItem) => {

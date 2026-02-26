@@ -1,5 +1,6 @@
 import { db } from "~/server/db";
 import { notFound, redirect } from "next/navigation";
+import type { Block } from "~/lib/blocks";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -24,11 +25,13 @@ export default async function EditPage({ params }: Props) {
     const path = formData.get("path") as string;
     const contentRaw = formData.get("content") as string;
 
-    let content: any = [];
+    let content: Block[] = [];
     try {
-      content = JSON.parse(contentRaw || "[]");
+      const parsed = JSON.parse(contentRaw || "[]") as unknown;
+      if (Array.isArray(parsed)) {
+        content = parsed as Block[];
+      }
     } catch {
-      // if invalid JSON, keep as empty array
       content = [];
     }
 

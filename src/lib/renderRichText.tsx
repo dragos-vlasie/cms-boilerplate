@@ -1,18 +1,29 @@
+/* eslint-disable @next/next/no-img-element */
 import type { JSX } from "react";
-import type { RichTextDoc } from "./blocks";
+import type {
+  RichTextDoc,
+  RichTextNode,
+  RichTextTextNode,
+  RichTextMark,
+  RichTextAlignment,
+} from "./blocks";
 
 export function renderRichText(doc: RichTextDoc) {
-  if (!doc || !doc.content) return null;
+  if (!Array.isArray(doc?.content)) return null;
   return doc.content.map((node, idx) => renderNode(node, idx));
 }
 
 function renderNode(
-  node: any,
+  node: RichTextNode,
   key: number,
 ): JSX.Element | JSX.Element[] | null {
   switch (node.type) {
     case "paragraph": {
-      if (!node.content) {
+      const content = Array.isArray(node.content)
+        ? node.content
+        : [];
+
+      if (content.length === 0) {
         return (
           <p key={key} className="my-4 text-base leading-relaxed">
             &nbsp;
@@ -26,7 +37,7 @@ function renderNode(
 
       return (
         <p key={key} className={`${baseClass} ${alignClass}`}>
-          {renderInline(node.content)}
+          {renderInline(content)}
         </p>
       );
     }
@@ -58,10 +69,10 @@ function renderNode(
     }
 
     case "image": {
-      const src = node.attrs?.src as string | undefined;
-      const width = node.attrs?.width as number | undefined;
-      const height = node.attrs?.height as number | undefined;
-      const alt = (node.attrs?.alt as string | undefined) ?? "";
+      const src = node.attrs?.src ?? undefined;
+      const width = node.attrs?.width ?? undefined;
+      const height = node.attrs?.height ?? undefined;
+      const alt = node.attrs?.alt ?? "";
 
       if (!src) return null;
 
@@ -90,7 +101,7 @@ function renderNode(
 
       return (
         <ul key={key} className={`${baseClass} ${alignClass}`}>
-          {node.content?.map((child: any, i: number) =>
+          {node.content?.map((child, i) =>
             renderNode(child, i),
           )}
         </ul>
@@ -104,7 +115,7 @@ function renderNode(
 
       return (
         <ol key={key} className={`${baseClass} ${alignClass}`}>
-          {node.content?.map((child: any, i: number) =>
+          {node.content?.map((child, i) =>
             renderNode(child, i),
           )}
         </ol>
@@ -114,7 +125,7 @@ function renderNode(
     case "listItem":
       return (
         <li key={key} className="leading-relaxed">
-          {node.content?.map((child: any, i: number) =>
+          {node.content?.map((child, i) =>
             renderNode(child, i),
           )}
         </li>
@@ -139,7 +150,7 @@ function renderNode(
           data-type="taskList"
           className="my-4 space-y-2 pl-0"
         >
-          {node.content?.map((child: any, i: number) =>
+          {node.content?.map((child, i) =>
             renderNode(child, i),
           )}
         </ul>
@@ -161,7 +172,7 @@ function renderNode(
             className="mt-1 h-4 w-4 rounded border-base-300"
           />
           <div>
-            {node.content?.map((child: any, i: number) =>
+            {node.content?.map((child, i) =>
               renderNode(child, i),
             )}
           </div>
@@ -173,16 +184,17 @@ function renderNode(
       return <span key={key}>{applyMarks(node)}</span>;
 
     default:
-      if (node.content) {
-        return node.content.map((child: any, i: number) =>
-          renderNode(child, i),
-        );
+      if (
+        "content" in node &&
+        Array.isArray(node.content)
+      ) {
+        return node.content.map((child, i) => renderNode(child, i));
       }
       return null;
   }
 }
 
-function renderInline(content: any[]): JSX.Element[] {
+function renderInline(content: RichTextNode[]): JSX.Element[] {
   return content.map((n, i) => {
     if (n.type === "text") {
       return <span key={i}>{applyMarks(n)}</span>;
@@ -191,9 +203,9 @@ function renderInline(content: any[]): JSX.Element[] {
   });
 }
 
-function applyMarks(node: any): JSX.Element {
+function applyMarks(node: RichTextTextNode): JSX.Element {
   const text = node.text ?? "";
-  const marks = node.marks ?? [];
+  const marks: RichTextMark[] = node.marks ?? [];
 
   let el: JSX.Element = <>{text}</>;
 
@@ -209,11 +221,10 @@ function applyMarks(node: any): JSX.Element {
         <code className="rounded bg-base-200 px-1 py-0.5 text-xs font-mono">
           {el}
         </code>
-      );
-    } else if (mark.type === "link") {
+        );
+      } else if (mark.type === "link") {
       const href = mark.attrs?.href ?? "#";
-      const isExternal =
-        typeof href === "string" && href.startsWith("http");
+      const isExternal = href.startsWith("http");
 
       el = (
         <a
@@ -233,7 +244,7 @@ function applyMarks(node: any): JSX.Element {
 
 
 function getAlignClass(
-  align: "left" | "center" | "right" | "justify" | undefined,
+  align: RichTextAlignment | undefined,
 ): string {
   if (align === "center") return "text-center";
   if (align === "right") return "text-right";

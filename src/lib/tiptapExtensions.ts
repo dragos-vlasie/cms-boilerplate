@@ -9,7 +9,7 @@ import TaskItem from "@tiptap/extension-task-item";
 
 // Paragraph with Tailwind/Daisy classes
 export const TailwindParagraph = Paragraph.extend({
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "p",
       {
@@ -31,7 +31,13 @@ export const TailwindHeading = Heading.extend({
     };
   },
 
-  renderHTML({ node, HTMLAttributes }) {
+  renderHTML({
+    node,
+    HTMLAttributes,
+  }: {
+    node: { attrs: { level?: number } };
+    HTMLAttributes: Record<string, unknown>;
+  }) {
     const level = node.attrs.level ?? 2;
     const clamped = Math.min(Math.max(level, 1), 6);
 
@@ -57,7 +63,7 @@ export const TailwindHeading = Heading.extend({
 
 // Bullet list
 export const TailwindBulletList = BulletList.extend({
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "ul",
       {
@@ -72,7 +78,7 @@ export const TailwindBulletList = BulletList.extend({
 
 // Ordered list
 export const TailwindOrderedList = OrderedList.extend({
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "ol",
       {
@@ -107,16 +113,23 @@ export const TailwindImage = Image.extend({
     };
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     // You can also inject Tailwind classes here later
-    return ["img", {...HTMLAttributes, class: "mx-auto h-auto max-w-full md:max-w-xl rounded-lg"}];
+    return [
+      "img",
+      {
+        ...HTMLAttributes,
+        class:
+          "mx-auto h-auto max-w-full md:max-w-xl rounded-lg",
+      },
+    ];
   },
 });
 
 
 // Task list wrapper
 export const TailwindTaskList = TaskList.extend({
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "ul",
       {
@@ -131,7 +144,13 @@ export const TailwindTaskList = TaskList.extend({
 
 // Task item with styled checkbox
 export const TailwindTaskItem = TaskItem.extend({
-  renderHTML({ node, HTMLAttributes }) {
+  renderHTML({
+    node,
+    HTMLAttributes,
+  }: {
+    node: { attrs: { checked?: boolean } };
+    HTMLAttributes: Record<string, unknown>;
+  }) {
     const checked = !!node.attrs.checked;
 
     return [

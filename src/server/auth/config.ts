@@ -30,7 +30,18 @@ export const authConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) {
+        const email =
+          credentials?.email &&
+          typeof credentials.email === "string"
+            ? credentials.email
+            : "";
+        const password =
+          credentials?.password &&
+          typeof credentials.password === "string"
+            ? credentials.password
+            : "";
+
+        if (!email || !password) {
           return null;
         }
 
@@ -39,15 +50,15 @@ export const authConfig = {
         }
 
         // Simple check: only accept the password from .env
-        if (credentials.password !== process.env.ADMIN_PASSWORD) {
+        if (password !== process.env.ADMIN_PASSWORD) {
           return null;
         }
 
         // We don't need a DB user for this boilerplate – just return a user object.
         return {
-          id: `admin-${credentials.email}`,
-          email: credentials.email,
-          name: credentials.email,
+          id: `admin-${email}`,
+          email,
+          name: email,
         };
       },
     }),
@@ -58,7 +69,7 @@ export const authConfig = {
       user: {
         ...session.user,
         // token.sub is set to the user.id we returned in authorize()
-        id: (token.sub as string) ?? "admin",
+        id: (token.sub!) ?? "admin",
       },
     }),
   },
